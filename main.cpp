@@ -304,7 +304,7 @@ int main()
     {
         numberOfEdge++;
         //intput city co ordinate;
-        //cout<<x<<" "<<y<<" "<<n<<endl;
+        cout<<x<<" "<<y<<" "<<n<<endl;
         connectionGraph[x][y]=1;
         connectionGraph[y][x]=1;
         dis[x][y]=n;
