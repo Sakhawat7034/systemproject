@@ -1,0 +1,15 @@
+# depslib dependency file v1.0
+1575387461 source:d:\study\project\main.cpp
+	<bits/stdc++.h>
+	"Random.cpp"
+
+1571492339 source:d:\study\project\random.cpp
+	<cstdlib>
+	<cmath>
+	<limits>
+
+1571492339 d:\study\project\random.cpp
+	<cstdlib>
+	<cmath>
+	<limits>
+
