@@ -21,6 +21,7 @@ double pheromen[100][100];
 double DELTAPHEROMONES[100][100];
 vector<int>ROUTES[11];
 vector<set<int> >component;
+vector<set<int> >component_boundary;
 set<int>st;
 vector<pair<int,int> >blocked_edge;
 int base_node=1;
@@ -28,7 +29,7 @@ set<int>base_component;
 set<int>boundary_node;
 Randoms *randoms;
 vector<int>BESTROUTE[100];
-vector<set<int> >component_boundary;
+
 
 void DFSUtil_(int s)
 {
@@ -137,11 +138,11 @@ double PHI (int cityi,int cityj,int antk)
     return (ETAij * TAUij) / sum;
 }
 
-void route(int antk)
+void route(int antk,int init)
 {
-    ROUTES[antk].push_back(26);
+    ROUTES[antk].push_back(init);
     memset(visited,0,sizeof(visited));
-    visited_component(26);
+    //visited_component(16);
     for(int i=0; i<ROUTES[antk].size(); i++)
     {
         int cityi=ROUTES[antk][i];
@@ -157,14 +158,14 @@ void route(int antk)
                 cnt++;
             }
         }
-        for(int k=0; k<cnt; k++)
-        {
-            for(int m=0; m<2; m++)
-            {
-                cout<<prob[k][m]<<" ";
-            }
-            cout<<endl;
-        }
+        // for(int k=0; k<cnt; k++)
+        // {
+        //     for(int m=0; m<2; m++)
+        //     {
+        //         cout<<prob[k][m]<<" ";
+        //     }
+        //     cout<<endl;
+        // }
         // deadlock
         if (0 == cnt)
         {
@@ -201,7 +202,7 @@ double length (int antk)
 
 void updatePHEROMONES ()
 {
-    for (int k=0; k<10; k++)
+    for (int k=0; k<4; k++)
     {
         double rlength = length(k);
         for (int r=0; r<ROUTES[k].size()-1; r++)
@@ -224,12 +225,12 @@ void updatePHEROMONES ()
 
 void optimize (int ITERATIONS)
 {
-    for (int iterations=1; iterations<=10; iterations++)
+    for (int iterations=1; iterations<=5; iterations++)
     {
         cout << flush;
         //cout << "ITERATION " << iterations << " HAS STARTED!" << endl << endl;
 
-        for (int k=0; k < 10; k++)
+        for (int k=0; k < 4; k++)
         {
             cout << " : ant " << k << " has been released!" << endl;
             while (0 != valid(k))
@@ -237,7 +238,7 @@ void optimize (int ITERATIONS)
                 cout << "  :: releasing ant " << k << " again!" << endl;
                 ROUTES[k].clear();
 
-                route(k);
+                route(k,25);
             }
 
             for (int i=0; i<ROUTES[k].size(); i++)
@@ -260,7 +261,7 @@ void optimize (int ITERATIONS)
                 for (int i=0; i<ROUTES[k].size(); i++)
                 {
                     BESTROUTE[0].push_back(ROUTES[k][i]);
-                    //cout<<ROUTES[k][i]<<" ";
+                    cout<<ROUTES[k][i]<<" ";
                 }
                 cout<<endl;
             }
@@ -272,7 +273,7 @@ void optimize (int ITERATIONS)
 //		cout << " done!" << endl << endl;
 //		printPHEROMONES ();
 //
-        for (int i=0; i<10; i++)
+        for (int i=0; i<4; i++)
         {
             ROUTES[i].clear();
         }
@@ -303,7 +304,6 @@ int main()
     while(fscanf(ptr,"%d %d %d",&x,&y,&n)==3)
     {
         numberOfEdge++;
-        //intput city co ordinate;
         cout<<x<<" "<<y<<" "<<n<<endl;
         connectionGraph[x][y]=1;
         connectionGraph[y][x]=1;
@@ -321,7 +321,6 @@ int main()
    while(fscanf(ptr,"%d %d",&x,&y)==2)
    {
        //input block edge;
-       //cout<<x<<" "<<y<<endl;
        connectionGraph[x][y]=2;
        connectionGraph[y][x]=2;
        i++;
@@ -343,15 +342,15 @@ int main()
         if(!st.empty())
             component.push_back(st);
     }
-//       cout<<"component:"<<endl;
-//       for(i=0; i<component.size(); i++)
-//       {
-//           for(set<int>::iterator it=component[i].begin(); it!=component[i].end(); it++)
-//           {
-//               cout<<*it<<" ";
-//           }
-//           cout<<endl;
-//       }
+      cout<<"component:"<<endl;
+      for(i=0; i<component.size(); i++)
+      {
+          for(set<int>::iterator it=component[i].begin(); it!=component[i].end(); it++)
+          {
+              cout<<*it<<" ";
+          }
+          cout<<endl;
+      }
     //Now  Collecting base component
     int flag=0;
     for(i=0; i<component.size(); i++)
@@ -407,12 +406,12 @@ int main()
             // cout<<*it<<endl;
         }
     }
-//     cout<<"boundary:";
-//     for(set<int>::iterator it=boundary_node.begin(); it!=boundary_node.end(); it++)
-//     {
-//         cout<<*it<<" ";
-//     }
-//     cout<<endl;
+    cout<<"boundary:";
+    for(set<int>::iterator it=boundary_node.begin(); it!=boundary_node.end(); it++)
+    {
+        cout<<*it<<" ";
+    }
+    cout<<endl;
     for(i=0; i<component.size(); i++)
     {
         set<int>temp;
@@ -423,10 +422,10 @@ int main()
             if(it2!=boundary_node.end())
             {
                 temp.insert(*it);
-                //  cout<<*it<<" ";
+                  cout<<*it<<" ";
             }
         }
-        //cout<<endl;
+        cout<<endl;
         if(temp.size()!=0)
         {
             component_boundary.push_back(temp);
@@ -448,6 +447,6 @@ int main()
 
     }
 
-   optimize(12);
+   //optimize(12);
 }
 
