@@ -4,10 +4,10 @@
 using namespace std;
 
 #define TAUMAX 2
-#define ALPHA (double)0.5
-#define BETA (double)0.8
-#define RO (double)0.2
-#define Q (double)100
+#define ALPHA (double)1
+#define BETA (double)2
+#define RO (double)0.3
+#define Q (double)1000
 double BESTLENGTH = (double)INT_MAX;
 int connectionGraph[1000][1000];
 int numberOfEdge = 0;
@@ -163,19 +163,15 @@ void route(int antk, int init)
             return;
         }
         int new_node = city();
-        //cout << "new node " << new_node << endl;
         if (new_node != base_node)
         {
 
             ROUTES[antk].push_back(new_node);
-          
-            //cout<<"gone in "<<new_node<<endl;
         }
 
         else
         {
             ROUTES[antk].push_back(new_node);
-            cout << endl;
             break;
         }
     }
@@ -216,22 +212,27 @@ void updatePHEROMONES()
 
 void optimize()
 {
+
     for (int iterations = 1; iterations <= 5; iterations++)
     {
         cout << flush;
         //cout << "ITERATION " << iterations << " HAS STARTED!" << endl << endl;
         for (int i = 0; i < component_boundary.size(); i++)
         {
+            vector<int> pathFromComponent[component_boundary[i].size()];
+            int ptr = 0;
+            cout << "component " << i << endl;
             for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
             {
+                ptr++;
                 for (int k = 0; k < 4; k++)
                 {
-                    
+
                     while (0 != valid(k))
                     {
 
                         ROUTES[k].clear();
-
+                        cout<<"com "<<i<<" "<<"ant "<<k<<" node "<<*it<<endl;
                         route(k, *it);
                     }
 
@@ -242,35 +243,45 @@ void optimize()
                     // cout << endl;
 
                     double rlength = length(k);
-                   // cout << rlength << endl;
-                    /*	for (int i=0; i<ROUTES[k].size(); i++) {
-            			cout<<ROUTES[k][i]<<" ";
-            		}*/
+                    // cout << rlength << endl;
+                    //cout<<"Ant "<<k<<endl;
+                    for (int j=0; j<ROUTES[k].size(); j++) {
+                    	cout<<ROUTES[k][j]<<" ";
+                    }
 
                     if (rlength < BESTLENGTH)
                     {
                         BESTLENGTH = rlength;
-                        BESTROUTE[k].clear();
+                        ROUTES[k].clear();
+                        pathFromComponent[ptr].clear();
                         for (int i = 0; i < ROUTES[k].size(); i++)
                         {
-                            BESTROUTE[k].push_back(ROUTES[k][i]);
-                            cout << ROUTES[k][i] << " ";
+                            pathFromComponent[ptr].push_back(ROUTES[k][i]);
+                            //cout << ROUTES[k][i] << " ";
                         }
-                        cout << endl;
+                        //cout << endl;
                     }
-                    cout << " : ant " << k << " has ended!" << endl;
+                    //cout << " : ant " << k << " has ended!" << endl;
                 }
                 BESTLENGTH = (double)INT_MAX;
+                // cout << "From component" << i << ";" << endl;
+                // for (int j = 0; j < ptr; j++)
+                // {
+                //     for (int k = 0; k < pathFromComponent[j].size(); k++)
+                //     {
+                //         cout << pathFromComponent[j][k] << " ";
+                //     }
+                //     cout << endl;
+                // }
                 for (int i = 0; i < 4; i++)
                 {
                     ROUTES[i].clear();
                 }
                 memset(visited, 0, sizeof(visited));
             }
+           
         }
 
-        cout << endl
-             << "updating PHEROMONES . . .";
         //Update pheromones
         updatePHEROMONES();
 
@@ -293,18 +304,18 @@ int main()
     map<int, pair<int, int>>::iterator it;
     bool visited[1000] = {0};
     ptr = fopen("projectData.txt", "r");
+    freopen("out.txt", "w", stdout);
     i = 0;
     ///initialize random number
     randoms = new Randoms(21);
     while (fscanf(ptr, "%d %d %d", &x, &y, &n) == 3)
     {
         numberOfEdge++;
-        cout << x << " " << y << " " << n << endl;
+        //cout << x << " " << y << " " << n << endl;
         connectionGraph[x][y] = 1;
         connectionGraph[y][x] = 1;
         dis[x][y] = n;
         dis[y][x] = n;
-        mp[x] = make_pair(y, n);
         numberOfNode = max(numberOfNode, x);
         numberOfNode = max(numberOfNode, y);
     }
@@ -396,6 +407,7 @@ int main()
             //cout<<"into 2nd if";
             boundary_node.insert(bb);
             // cout<<*it<<endl;
+        
         }
     }
     cout << "boundary:";
@@ -437,6 +449,16 @@ int main()
             DELTAPHEROMONES[i][j] = 0.0;
         }
     }
+     for (int i = 0; i < component_boundary.size(); i++)
+        {
+            cout << "component " << i << endl;
+            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
+            {
+                cout<<*it<<" ";
+            }
+            cout<<endl;
+        }
 
     optimize();
+    cout<<"finish"<<endl;
 }
