@@ -232,22 +232,15 @@ void optimize()
                     {
 
                         ROUTES[k].clear();
-                        cout<<"com "<<i<<" "<<"ant "<<k<<" node "<<*it<<endl;
                         route(k, *it);
-                    }
-
-                    // for (int i = 0; i < ROUTES[k].size(); i++)
-                    // {
-                    //     cout << ROUTES[k][i] << " ";
-                    // }
-                    // cout << endl;
-
+                    } 
                     double rlength = length(k);
                     // cout << rlength << endl;
                     //cout<<"Ant "<<k<<endl;
                     for (int j=0; j<ROUTES[k].size(); j++) {
                     	cout<<ROUTES[k][j]<<" ";
                     }
+                    cout << endl;
 
                     if (rlength < BESTLENGTH)
                     {
