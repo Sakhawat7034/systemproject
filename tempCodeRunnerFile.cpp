@@ -1,4 +1,4 @@
-  cout<<"Ant "<<k<<endl;
-                    for (int i=0; i<ROUTES[k].size(); i++) {
-                    	cout<<ROUTES[k][i]<<" ";
+ for (int j=0; j<ROUTES[k].size(); j++) {
+                    	cout<<ROUTES[k][j]<<" ";
                     }
+                    

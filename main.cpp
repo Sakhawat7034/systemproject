@@ -9,14 +9,13 @@ using namespace std;
 #define RO (double)0.3
 #define Q (double)1000
 double BESTLENGTH = (double)INT_MAX;
-int connectionGraph[1000][1000];
+int connectionGraph[100][100];
 int numberOfEdge = 0;
 int numberOfBlockEdge = 0;
 int numberOfNode = -100;
 bool visited[100] = {0};
 double prob[100][2] = {0};
 double dis[100][100] = {0};
-double cost[100][100] = {0};
 double pheromen[100][100] = {0};
 double DELTAPHEROMONES[100][100] = {0};
 vector<int> ROUTES[11];
@@ -177,9 +176,10 @@ void route(int antk, int init)
     }
 }
 
-double length(int antk)
+
+int length(int antk)
 {
-    double sum = 0.0;
+   int sum = 0;
     for (int j = 0; j < ROUTES[antk].size() - 1; j++)
     {
         sum += dis[ROUTES[antk][j]][ROUTES[antk][j + 1]];
@@ -218,49 +218,52 @@ void optimize()
         cout << flush;
         //cout << "ITERATION " << iterations << " HAS STARTED!" << endl << endl;
         vector<int> pathFromComponent[component_boundary.size()];
+        
         for (int i = 0; i < component_boundary.size(); i++)
         {
-            
+            vector<int> temp[component_boundary.size()];
             cout << "component " << i << endl;
             for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
             {
+                cout<<"it "<<*it<<endl;
                 for (int k = 0; k < 4; k++)
                 {
 
                     while (0 != valid(k))
-                    {
-
+                    {   
                         ROUTES[k].clear();
                         route(k, *it);
                     } 
-                    double rlength = length(k);
+                    int rlength = length(k);
                     //cout << rlength << endl;
                     //cout<<"Ant "<<k<<endl;
-                    // for (int j=0; j<ROUTES[k].size(); j++) {
-                    // 	cout<<ROUTES[k][j]<<" ";
-                    // }
-                    // cout << endl;
+                    for (int j=0; j < ROUTES[k].size(); j++) {
+                    	cout<<ROUTES[k][j]<<" ";
+                    }
+                    cout << endl;
 
                     if (rlength < BESTLENGTH)
                     {
+                        cout<<"ok 3";
                         BESTLENGTH = rlength;
-                        
-                        pathFromComponent[i].clear();
+                        temp[i].clear();
                         for (int j = 0; j < ROUTES[k].size(); j++)
                         {
-                            pathFromComponent[i].push_back(ROUTES[k][j]);
+                            temp[i].push_back(ROUTES[k][j]);
+                            cout<<ROUTES[k][j]<<" ";
                         }
                         cout << endl;
+                        ROUTES[k].clear();
                         
                     }
                     //cout << " : ant " << k << " has ended!" << endl;
                 }
-                BESTLENGTH = (double)INT_MAX;
+                BESTLENGTH = INT_MAX;
                 cout << "From component" << i << ";" << endl;
             
                     for (int k = 0; k < pathFromComponent[i].size(); k++)
                     {
-                        cout << pathFromComponent[i][k] << " ";
+                       // cout << pathFromComponent[i][k] << " ";
                     }
                     cout << endl;
                 for (int i = 0; i < 4; i++)
