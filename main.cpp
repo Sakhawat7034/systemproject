@@ -23,7 +23,7 @@ vector<set<int>> component;
 vector<set<int>> component_boundary;
 set<int> st;
 vector<pair<int, int>> blocked_edge;
-int base_node = 1;
+int base_node = 12;
 set<int> base_component;
 set<int> boundary_node;
 Randoms *randoms;
@@ -176,10 +176,9 @@ void route(int antk, int init)
     }
 }
 
-
 int length(int antk)
 {
-   int sum = 0;
+    int sum = 0;
     for (int j = 0; j < ROUTES[antk].size() - 1; j++)
     {
         sum += dis[ROUTES[antk][j]][ROUTES[antk][j + 1]];
@@ -218,61 +217,58 @@ void optimize()
         cout << flush;
         //cout << "ITERATION " << iterations << " HAS STARTED!" << endl << endl;
         vector<int> pathFromComponent[component_boundary.size()];
-        
+
         for (int i = 0; i < component_boundary.size(); i++)
         {
-            vector<int> temp[component_boundary.size()];
+            vector<int> temp[1000];
             cout << "component " << i << endl;
-            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
+            int l = 0;
+            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++, l++)
             {
-                cout<<"it "<<*it<<endl;
                 for (int k = 0; k < 4; k++)
                 {
 
                     while (0 != valid(k))
-                    {   
+                    {
                         ROUTES[k].clear();
                         route(k, *it);
-                    } 
+                    }
                     int rlength = length(k);
                     //cout << rlength << endl;
                     //cout<<"Ant "<<k<<endl;
-                    for (int j=0; j < ROUTES[k].size(); j++) {
-                    	cout<<ROUTES[k][j]<<" ";
-                    }
-                    cout << endl;
+                    // for (int j=0; j < ROUTES[k].size(); j++) {
+                    // 	cout<<ROUTES[k][j]<<" ";
+                    // }
+                    // cout << endl;
 
                     if (rlength < BESTLENGTH)
                     {
-                        cout<<"ok 3";
                         BESTLENGTH = rlength;
-                        temp[i].clear();
+                        temp[l].clear();
+                        temp[l].push_back(rlength);
                         for (int j = 0; j < ROUTES[k].size(); j++)
                         {
-                            temp[i].push_back(ROUTES[k][j]);
-                            cout<<ROUTES[k][j]<<" ";
+                            temp[l].push_back(ROUTES[k][j]);
                         }
-                        cout << endl;
                         ROUTES[k].clear();
-                        
                     }
                     //cout << " : ant " << k << " has ended!" << endl;
                 }
                 BESTLENGTH = INT_MAX;
-                cout << "From component" << i << ";" << endl;
-            
-                    for (int k = 0; k < pathFromComponent[i].size(); k++)
-                    {
-                       // cout << pathFromComponent[i][k] << " ";
-                    }
-                    cout << endl;
                 for (int i = 0; i < 4; i++)
                 {
                     ROUTES[i].clear();
                 }
                 memset(visited, 0, sizeof(visited));
             }
-           
+            for (int k = 0; k < component_boundary[i].size(); k++)
+            {
+                for (int l = 0; l < temp[k].size(); l++)
+                {
+                    cout << temp[k][l] << " ";
+                }
+                cout << endl;
+            }
         }
 
         //Update pheromones
@@ -400,7 +396,6 @@ int main()
             //cout<<"into 2nd if";
             boundary_node.insert(bb);
             // cout<<*it<<endl;
-        
         }
     }
     cout << "boundary:";
@@ -442,16 +437,16 @@ int main()
             DELTAPHEROMONES[i][j] = 0.0;
         }
     }
-     for (int i = 0; i < component_boundary.size(); i++)
+    for (int i = 0; i < component_boundary.size(); i++)
+    {
+        cout << "component " << i << endl;
+        for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
         {
-            cout << "component " << i << endl;
-            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
-            {
-                cout<<*it<<" ";
-            }
-            cout<<endl;
+            cout << *it << " ";
         }
+        cout << endl;
+    }
 
     optimize();
-    cout<<"finish"<<endl;
+    cout << "finish" << endl;
 }
