@@ -5,15 +5,12 @@ using namespace std;
 
 #define TAUMAX 2
 #define ALPHA (double)1
-#define BETA (double)2
-#define RO (double)0.2
+#define BETA (double)1
+#define RO (double)0.8
 #define Q (double)1000
 double BESTLENGTH = (double)INT_MAX;
 int connectionGraph[100][100];
-int numberOfEdge = 0;
-int numberOfBlockEdge = 0;
-int numberOfNode = -100;
-bool visited[100] = {0};
+bool visited[500] = {0};
 double prob[100][2] = {0};
 double dis[100][100] = {0};
 double pheromen[100][100] = {0};
@@ -23,12 +20,19 @@ vector<set<int>> component;
 vector<set<int>> component_boundary;
 set<int> st;
 vector<pair<int, int>> blocked_edge;
-int base_node = 59;
 set<int> base_component;
 set<int> boundary_node;
 Randoms *randoms;
 vector<int> BESTROUTE[100];
 int unit[100];
+int visitedComponent[100];
+
+int numberOfEdge = 0;
+int numberOfBlockEdge = 0;
+int numberOfNode = -1;
+int base_node = 12;
+int unit_size = 4;
+
 void DFSUtil_(int s)
 {
     visited[s] = true;
@@ -50,20 +54,27 @@ void findNumberOfComponentTravel(int city, int u)
 
         if (it != component[i].end())
         {
+            visitedComponent[city] = 1;
             unit[i] = u;
             return;
         }
     }
     return;
 }
+
 void visited_component(vector<int> v[])
 {
 
     for (int i = 0; i < component_boundary.size(); i++)
     {
-        for (int j =2; j < v[i].size(); j++)
+        if (visitedComponent[v[i][2]] == 0)
         {
-            findNumberOfComponentTravel(v[i][j], i);
+            visitedComponent[v[i][2]] = 1;
+            for (int j = 2; j < v[i].size(); j++)
+            {
+
+                findNumberOfComponentTravel(v[i][j], i);
+            }
         }
     }
     return;
@@ -94,7 +105,7 @@ int valid(int antk)
         }
     }
 
-    // Check if element 22 exists in vector
+    // Check if base node exists in vector
     vector<int>::iterator it = find(ROUTES[antk].begin(), ROUTES[antk].end(), base_node);
 
     if (it == ROUTES[antk].end())
@@ -108,7 +119,6 @@ int valid(int antk)
 int city()
 {
     double xi = randoms->Uniforme();
-    //cout<<"random "<<xi<<endl;
     int i = 0;
     double sum = prob[i][0];
     while (sum < xi)
@@ -142,7 +152,6 @@ void route(int antk, int init)
 {
     ROUTES[antk].push_back(init);
     memset(visited, 0, sizeof(visited));
-    //visited_component(16);
     visited[init] = 1;
     for (int i = 0; i < ROUTES[antk].size(); i++)
     {
@@ -204,15 +213,14 @@ int componentNumber(vector<int> v)
     {
         for (int j = 0; j < component.size(); j++)
         {
-        set<int>::iterator it = component[j].begin();
-        it=component[j].find(v[i]);
-        
-        if(it!=component[j].end())
-        {
+            set<int>::iterator it = component[j].begin();
+            it = component[j].find(v[i]);
+
+            if (it != component[j].end())
+            {
                 temp.insert(j);
+            }
         }
-        }
-       
     }
     return temp.size();
 }
@@ -241,129 +249,14 @@ void updatePHEROMONES(vector<int> v[])
     }
 }
 
-void optimize()
+void input()
 {
-
-    for (int iterations = 1; iterations <= 5; iterations++)
-    {
-        cout << flush;
-        //cout << "ITERATION " << iterations << " HAS STARTED!" << endl << endl;
-        vector<int> pathFromComponent[component_boundary.size()];
-
-        for (int i = 0; i < component_boundary.size(); i++)
-        {
-            int bestnumber=-1;
-            vector<int> temp;
-            cout << "component " << i << endl;
-            int l = 0;
-            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++, l++)
-            {
-                for (int k = 0; k < 4; k++)
-                {
-
-                    while (0 != valid(k))
-                    {
-                        ROUTES[k].clear();
-                        route(k, *it);
-                    }
-                    int rlength = length(k);
-                    int numbeOfTraverscomponent=componentNumber(ROUTES[k]);
-                    // cout << rlength << endl;
-                        cout << "Ant " << k << endl;
-                        for (int j = 0; j < ROUTES[k].size(); j++)
-                        {
-                           cout << ROUTES[k][j] << " ";
-                        }
-                       cout << endl;
-
-                    if (numbeOfTraverscomponent > bestnumber)
-                    {
-                        bestnumber=numbeOfTraverscomponent;
-                        temp.clear();
-                        temp.push_back(rlength);
-                        temp.push_back(bestnumber);
-                        for (int j = 0; j < ROUTES[k].size(); j++)
-                        {
-                            temp.push_back(ROUTES[k][j]);
-                        }
-                        ROUTES[k].clear();
-                    }
-                    //cout << " : ant " << k << " has ended!" << endl;
-                }
-                for (int i = 0; i < 4; i++)
-                {
-                    ROUTES[i].clear();
-                }
-                memset(visited, 0, sizeof(visited));
-            }
-            // BESTLENGTH = INT_MAX;
-            int ptr = 0;
-            // for (int k = 0; k < component_boundary[i].size(); k++)
-            // {
-            //     // if (BESTLENGTH >= temp[k][0])
-            //     // {
-            //     //     BESTLENGTH = temp[k][0];
-            //     //     ptr = k;
-            //     // }
-            //     cerr<<temp
-            //     for (int l = 0; l < temp[k].size(); l++)
-            //     {
-            //         cout << temp[k][l] << " ";
-            //     }
-            //     cout << endl;
-            // }
-            cerr << "component " << i << endl;
-            for (int k = 0; k < temp.size(); k++)
-            {
-                cerr<<temp[k]<<" ";
-                pathFromComponent[i].push_back(temp[k]);
-            }
-            cerr<<endl;
-        }
-        memset(unit, -1, sizeof unit);
-        visited_component(pathFromComponent);
-        set<int>s;
-        for (int i = 0; i < component_boundary.size(); i++)
-        {
-            cerr<< unit[i] << " ";
-            s.insert(unit[i]);
-        }
-        cerr << endl;
-        for(set<int>::iterator it=s.begin();it!=s.end();it++)
-        {
-            for(int i=0;i<pathFromComponent[*it].size();i++)
-            {
-                cerr<<pathFromComponent[*it][i]<<" ";
-            }
-            cerr<<endl;
-        }
-        //Update pheromones
-        updatePHEROMONES(pathFromComponent);
-
-        cout << endl
-             << "ITERATION " << iterations << " HAS ENDED!" << endl
-             << endl;
-    }
-}
-
-int main()
-{
-    freopen("new.txt", "w", stderr);
     int n, x, y, i, j;
     FILE *ptr;
-    string line;
-    map<int, pair<int, int>> mp;
-    map<int, pair<int, int>>::iterator it;
-    bool visited[1000] = {0};
     ptr = fopen("projectData.txt", "r");
-    freopen("out.txt", "w", stdout);
-    i = 0;
-    ///initialize random number
-    randoms = new Randoms(21);
     while (fscanf(ptr, "%d %d %d", &x, &y, &n) == 3)
     {
         numberOfEdge++;
-        //cout << x << " " << y << " " << n << endl;
         connectionGraph[x][y] = 1;
         connectionGraph[y][x] = 1;
         dis[x][y] = n;
@@ -372,7 +265,6 @@ int main()
         numberOfNode = max(numberOfNode, y);
     }
 
-    i = 0;
     fclose(ptr);
     ptr = fopen("input2.txt", "r");
     while (fscanf(ptr, "%d %d", &x, &y) == 2)
@@ -380,10 +272,13 @@ int main()
         //input block edge;
         connectionGraph[x][y] = 2;
         connectionGraph[y][x] = 2;
-        i++;
         blocked_edge.push_back(make_pair(x, y));
     }
     fclose(ptr);
+}
+
+void DFS()
+{
     //for component;
     for (int i = 1; i <= numberOfNode; i++)
     {
@@ -399,17 +294,13 @@ int main()
         if (!st.empty())
             component.push_back(st);
     }
-    // cout << "component:" << endl;
-    // for (int i = 0; i < component.size(); i++)
-    // {
-    //     for (set<int>::iterator it = component[i].begin(); it != component[i].end(); it++)
-    //     {
-    //         cout << *it << " ";
-    //     }
-    //     cout << endl;
-    // }
-    //Now  Collecting base component
+}
+
+void differBaseComponent()
+{
+    int i;
     int flag = 0;
+
     for (i = 0; i < component.size(); i++)
     {
         for (set<int>::iterator it = component[i].begin(); it != component[i].end(); it++)
@@ -429,44 +320,260 @@ int main()
             break;
         }
     }
-    /*  cout<<"base component contains:";
-      for(set<int>::iterator it=base_component.begin(); it!=base_component.end(); it++)
-      {
-          cout<<*it<<" ";
-      }
-      cout<<endl;*/
+}
 
-    //now collecting the boundary nodes
-    //cout<<"do"<<endl;
+void collectAllBoundaryNodes()
+{
     for (int i = 0; i < blocked_edge.size(); i++)
     {
-        // cout<<blocked_edge[i].first<<" "<<blocked_edge[i].second<<endl;
         int bb = blocked_edge[i].first;
-        //cout<<bb<<endl;
         set<int>::iterator it = base_component.find(bb);
 
         if (it == base_component.end())
         {
-            //cout<<"into if";
             boundary_node.insert(bb);
-            //cout<<*it<<endl;
         }
         bb = blocked_edge[i].second;
-        //cout<<bb<<endl;
+
         it = base_component.find(blocked_edge[i].second);
         if (it == base_component.end())
         {
-            //cout<<"into 2nd if";
             boundary_node.insert(bb);
-            // cout<<*it<<endl;
         }
     }
-    cout << "boundary:";
-    for (set<int>::iterator it = boundary_node.begin(); it != boundary_node.end(); it++)
+}
+
+void optimize()
+{
+    vector<int> final[unit_size + 10];
+    int ok = 0;
+    int BESTCOST = INT_MAX;
+    int unitsize = INT_MAX;
+
+    for (int iterations = 1; iterations <= 5; iterations++)
     {
-        cout << *it << " ";
+        cout << flush;
+        vector<int> pathFromComponent[component_boundary.size()];
+
+        for (int i = 0; i < component_boundary.size(); i++)
+        {
+            int bestnumber = -1;
+            vector<int> temp;
+            cout << "component " << i << endl;
+            for (set<int>::iterator it = component_boundary[i].begin(); it != component_boundary[i].end(); it++)
+            {
+                for (int k = 0; k < 4; k++)
+                {
+
+                    while (0 != valid(k))
+                    {
+                        ROUTES[k].clear();
+                        route(k, *it);
+                    }
+                    int rlength = length(k);
+                    int numbeOfTraverscomponent = componentNumber(ROUTES[k]);
+                    // cout << "Ant " << k << endl;
+                    // for (int j = 0; j < ROUTES[k].size(); j++)
+                    // {
+                    //     cout << ROUTES[k][j] << " ";
+                    // }
+                    // cout << endl;
+
+                    if (rlength < BESTLENGTH)
+                    {
+                        BESTLENGTH = rlength;
+                        bestnumber = numbeOfTraverscomponent;
+                        temp.clear();
+                        temp.push_back(rlength);
+                        temp.push_back(bestnumber);
+                        for (int j = 0; j < ROUTES[k].size(); j++)
+                        {
+                            temp.push_back(ROUTES[k][j]);
+                        }
+                        ROUTES[k].clear();
+                    }
+                }
+                BESTLENGTH = INT_MAX;
+                for (int i = 0; i < 4; i++)
+                {
+                    ROUTES[i].clear();
+                }
+                memset(visited, 0, sizeof(visited));
+            }
+            //cerr << "component " << i << endl;
+            for (int k = 0; k < temp.size(); k++)
+            {
+                //cerr << temp[k] << " ";
+                pathFromComponent[i].push_back(temp[k]);
+            }
+            // cerr << endl;
+        }
+
+        memset(unit, -1, sizeof(unit));
+        memset(visitedComponent, 0, sizeof(visitedComponent));
+
+        visited_component(pathFromComponent);
+
+        set<int> s;
+        for (int i = 0; i < component_boundary.size(); i++)
+        {
+            s.insert(unit[i]);
+        }
+
+        if (s.size() == 4 && ok == 0)
+        {
+            ok = 1;
+            int l = 0;
+            unitsize = 4;
+            for (set<int>::iterator it = s.begin(); it != s.end(); l++, it++)
+            {
+                for (int i = 0; i < pathFromComponent[*it].size(); i++)
+                {
+                    final[l].push_back(pathFromComponent[*it][i]);
+                }
+            }
+        }
+        else if (ok == 0)
+        {
+
+            if (s.size() <= unitsize)
+            {
+
+                int cost = 0;
+                for (set<int>::iterator it = s.begin(); it != s.end(); it++)
+                {
+
+                    cost += pathFromComponent[*it][0];
+                }
+                if (cost < BESTCOST)
+                {
+
+                    BESTCOST = cost;
+                    unitsize = s.size();
+                    int l = 0;
+
+                    for (set<int>::iterator it = s.begin(); it != s.end(); l++, it++)
+                    {
+                        final[l].clear();
+                        for (int i = 0; i < pathFromComponent[*it].size(); i++)
+                        {
+                            final[l].push_back(pathFromComponent[*it][i]);
+                        }
+                    }
+                }
+            }
+        }
+
+        int ptr = 0;
+
+        //Update pheromones
+        updatePHEROMONES(pathFromComponent);
     }
-    cout << endl;
+    vector<int>temp;
+   
+    int tempunit=unitsize;
+    for (int i = 0; i < unitsize; i++)
+    {
+        if (tempunit==4)
+        break;
+        for (int j = 2; j < final[i].size(); j++)
+        {
+           for(int n=1;n<=numberOfNode;n++)
+           {
+               if(connectionGraph[final[i][j]][n]==2)
+               {
+                   for(int k=0;k<unitsize;k++)
+                   {
+                       if(n==final[k][2])
+                       { 
+                           if(i!=k)
+                           {
+                                  
+                                 final[i].insert(final[i].begin()+j+1,n);
+                                 final[i][0]+=2*dis[final[i][j]][n];
+                                 temp.push_back(final[i][j]);
+                                 final[k].clear();
+                                 tempunit--;
+                                 
+                           }
+                           
+                           
+                       }
+                   }
+               }
+           }
+        }
+    }
+    for(int i=0;i<temp.size();i++)
+    {
+        for(int j=0;j<unitsize;j++)
+        {
+            vector<int>::iterator it=final[j].begin();
+            it=find(it,final[j].end(),temp[i]);
+            if(it!=final[j].end())
+            {
+                final[j].insert(it+2,temp[i]);
+            }
+        }
+    }
+     for(int i=0;i<unitsize;i++)
+        {
+            for (int j = 0; j < final[i].size(); j++)
+            {
+               cerr<<final[i][j]<<" ";
+            }
+            cerr<<endl;
+        }
+}
+
+int main()
+{
+    freopen("out.txt", "w", stdout);
+    freopen("output11.txt", "w", stderr);
+    int n, x, y, i, j;
+    bool visited[1000] = {0};
+
+    ///initialize random number
+    randoms = new Randoms(21);
+
+    //project input
+    input();
+
+    //Find disconnected component
+    DFS();
+
+    // cout << "component:" << endl;
+    // for (int i = 0; i < component.size(); i++)
+    // {
+    //     for (set<int>::iterator it = component[i].begin(); it != component[i].end(); it++)
+    //     {
+    //         cout << *it << " ";
+    //     }
+    //     cout << endl;
+    // }
+
+    //Now  Collecting base component
+
+    differBaseComponent();
+
+    cout<<"base component contains:";
+      for(set<int>::iterator it=base_component.begin(); it!=base_component.end(); it++)
+      {
+          cout<<*it<<" ";
+      }
+    cout<<endl;
+
+    //now collecting the boundary nodes
+
+    collectAllBoundaryNodes();
+
+    // cout << "boundary:";
+    // for (set<int>::iterator it = boundary_node.begin(); it != boundary_node.end(); it++)
+    // {
+    //     cout << *it << " ";
+    // }
+    // cout << endl;
+
     for (i = 0; i < component.size(); i++)
     {
         set<int> temp;
@@ -492,7 +599,7 @@ int main()
         {
             if (connectionGraph[i][j] == 1 || connectionGraph[i][j] == 2)
             {
-                pheromen[i][j] = randoms->Uniforme() * 1.5;
+                pheromen[i][j] = randoms->Uniforme() * .5;
                 pheromen[j][i] = pheromen[i][j];
             }
             DELTAPHEROMONES[i][j] = 0.0;
